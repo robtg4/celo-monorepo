@@ -1,4 +1,4 @@
-import { eqAddress, Err, Ok, Result } from '@celo/base'
+import { eqAddress, Err, Ok } from '@celo/base'
 import { Address, ContractKit } from '@celo/contractkit'
 import {
   FetchError,
@@ -17,10 +17,10 @@ import {
 } from '@celo/utils/src/address'
 import { recoverEIP712TypedDataSigner } from '@celo/utils/src/signatureUtils'
 import { SignedPostPolicyV4Output } from '@google-cloud/storage'
-import FormData from 'form-data'
 import * as t from 'io-ts'
 import fetch from 'node-fetch'
 import { call, put, select } from 'redux-saga/effects'
+import RNFetchBlob from 'rn-fetch-blob'
 import { profileUploaded } from 'src/account/actions'
 import { nameSelector } from 'src/account/selectors'
 import { ErrorMessages } from 'src/app/ErrorMessages'
@@ -104,20 +104,25 @@ class UploadServiceDataWrapper implements OffchainDataWrapper {
     const signedUrls = await makeCall(signedUrlsPayload, authorization)
     const writeError = await Promise.all(
       signedUrls.map(({ url, fields }, i) => {
-        const formData = new FormData()
+        const formData = []
         for (const name of Object.keys(fields)) {
-          formData.append(name, fields[name])
+          formData.push({ name, data: fields[name] })
         }
-        formData.append('file', dataPayloads[i])
+        formData.push({ name: 'file', data: dataPayloads[i] })
+        console.log(formData)
 
-        return fetch(url, {
-          method: 'POST',
-          headers: {
-            enctype: 'multipart/form-data',
+        return RNFetchBlob.fetch(
+          'POST',
+          url,
+          {
+            'Content-Type': 'multipart/form-data',
           },
-          // @ts-ignore
-          body: formData,
-        }).then((x) => x.text())
+          formData
+        ).then((x) => {
+          console.log('resp')
+          console.log(x)
+          x.text()
+        })
       })
     )
     console.log(writeError)
@@ -259,7 +264,9 @@ export function* uploadName() {
   const nameAccessor = new PrivateNameAccessor(offchainWrapper)
   console.log('writing name')
 
-  const writeError = yield call([nameAccessor, 'write'], { name }, [])
+  // const writeError = yield call([nameAccessor, 'write'], { name }, [])
+  // nameAccessor.write({name}, [])
+  const writeError = yield call(() => nameAccessor.write({ name }, []))
   Logger.info(TAG + '@uploadName' + 'uploaded name')
 
   if (writeError) {
@@ -289,6 +296,8 @@ export function* uploadSymmetricKeys(recipientAddresses: string[]) {
   const offchainWrapper = new UploadServiceDataWrapper(contractKit, account)
   // offchainWrapper.storageWriter = storageWriter
   const nameAccessor = new PrivateNameAccessor(offchainWrapper)
+
+  // TODO: use account address instead of wallet address
 
   const writeError = yield call([nameAccessor, 'writeKeys'], { name }, recipientAddresses)
   Logger.info(TAG + '@uploadSymmetricKeys', 'uploaded symmetric keys for ' + recipientAddresses)
