@@ -17,8 +17,6 @@ import {
   toChecksumAddress,
 } from '@celo/utils/lib/address'
 import { recoverEIP712TypedDataSigner } from '@celo/utils/lib/signatureUtils'
-import { SignedPostPolicyV4Output } from '@google-cloud/storage'
-import FormData from 'form-data'
 import * as t from 'io-ts'
 import fetch from 'node-fetch'
 
@@ -44,7 +42,7 @@ readerKit.defaultAccount = readerAddress
 
 const authorizerUrl = 'https://us-central1-celo-testnet.cloudfunctions.net/valora-upload-authorizer'
 
-async function call(data: any, signature: string): Promise<SignedPostPolicyV4Output[]> {
+async function call(data: any, signature: string): Promise<string[]> {
   const response = await fetch(authorizerUrl, {
     method: 'POST',
     headers: {
@@ -91,22 +89,11 @@ class UploadServiceDataWrapper implements OffchainDataWrapper {
     )
     const authorization = await this.kit.getWallet().signPersonalMessage(this.signer, hexPayload)
     const signedUrls = await call(signedUrlsPayload, authorization)
-
     await Promise.all(
-      signedUrls.map(({ url, fields }, i) => {
-        const formData = new FormData()
-        for (const name of Object.keys(fields)) {
-          formData.append(name, fields[name])
-        }
-        formData.append('file', dataPayloads[i])
-
+      signedUrls.map((url, i) => {
         return fetch(url, {
           method: 'POST',
-          headers: {
-            enctype: 'multipart/form-data',
-          },
-          // @ts-ignore
-          body: formData,
+          body: dataPayloads[i],
         }).then((x) => x.text())
       })
     )

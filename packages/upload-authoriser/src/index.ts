@@ -64,15 +64,14 @@ export const authorize: HttpFunction = async (req, res) => {
 
       const file = bucket.file(`${toChecksumAddress(signer)}${path}`)
       return file
-        .generateSignedPostPolicyV4({
+        .getSignedUrl({
+          action: 'write',
           expires: Date.now() + FIVE_MINUTES,
-          conditions: [
-            // TODO: get this to work
-            // ['eq', '$Content-Type', 'application/octet-stream'],
-            ['content-length-range', min, max],
-          ],
+          extensionHeaders: {
+            'x-goog-content-length-range': `${min},${max}`,
+          },
         })
-        .then(([policy]) => policy)
+        .then(([url]) => url)
     })
   )
 
