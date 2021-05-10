@@ -20,8 +20,9 @@ INITIALIZE_DATA=""
 REPORT=""
 DRYRUN=""
 FROM=""
+FORNO=""
 
-while getopts 'b:n:p:i:r:df:' flag; do
+while getopts 'b:n:p:i:r:drf:' flag; do
   case "${flag}" in
     b) BRANCH="${OPTARG}" ;;
     n) NETWORK="${OPTARG}" ;;
@@ -29,8 +30,8 @@ while getopts 'b:n:p:i:r:df:' flag; do
     i) INITIALIZE_DATA="${OPTARG}" ;;
     r) REPORT="${OPTARG}" ;;
     d) DRYRUN="--dry_run" ;;
+    r) FORNO="--forno" ;;
     f) FROM="${OPTARG}" ;;
-    forno) FORNO="--forno" ;;
     *) error "Unexpected option ${flag}" ;;
   esac
 done
@@ -50,5 +51,4 @@ yarn run truffle exec ./scripts/truffle/make-release.js \
   --report $REPORT \
   --proposal $PROPOSAL \
   --from $FROM \
-  --initialize_data $INITIALIZE_DATA $DRYRUN
-  $FORNO;
+  --initialize_data $INITIALIZE_DATA $DRYRUN $FORNO;
