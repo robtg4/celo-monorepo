@@ -44,7 +44,7 @@ echo "- Check versions of current branch"
 # From check-versions.sh
 ./scripts/bash/check-versions.sh -a $BRANCH -b $CURR_BRANCH -r "report.json" -l $LOG_FILE
 
-INITIALIZATION_FILE=`ls -t releaseData/initializationData/* | head -n 1 | xargs realpath`
+INITIALIZATION_FILE=`ls -1 releaseData/initializationData/* | tail -n 1 | xargs realpath`
 
 echo "- Deploy release of current branch"
 ./scripts/bash/make-release.sh -b $CURR_BRANCH -n development -r "report.json" -p "proposal.json" -i $INITIALIZATION_FILE
