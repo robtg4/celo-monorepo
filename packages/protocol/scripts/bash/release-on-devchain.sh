@@ -47,11 +47,11 @@ echo "- Check versions of current branch"
 INITIALIZATION_FILE=`ls -t releaseData/initializationData/* | head -n 1 | xargs realpath`
 
 echo "- Deploy release of current branch"
-./scripts/bash/make-release.sh -b $CURR_BRANCH -n development -r "report.json" -p "proposal.json" -i $INITIALIZATION_DATA
+./scripts/bash/make-release.sh -b $CURR_BRANCH -n development -r "report.json" -p "proposal.json" -i $INITIALIZATION_FILE
 
 # From verify-release.sh
 echo "- Verify release"
-./scripts/bash/verify-release.sh -b $CURR_BRANCH -n development -p "proposal.json" -i $INITIALIZATION_DATA
+./scripts/bash/verify-release.sh -b $CURR_BRANCH -n development -p "proposal.json" -i $INITIALIZATION_FILE
 
 if [[ -n $GANACHE_PID ]]; then
     kill $GANACHE_PID
