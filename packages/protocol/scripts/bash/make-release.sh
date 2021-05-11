@@ -22,7 +22,7 @@ DRYRUN=""
 FROM=""
 FORNO=""
 
-while getopts 'b:n:p:i:r:drf:' flag; do
+while getopts 'b:n:p:i:r:dzf:' flag; do
   case "${flag}" in
     b) BRANCH="${OPTARG}" ;;
     n) NETWORK="${OPTARG}" ;;
@@ -30,7 +30,7 @@ while getopts 'b:n:p:i:r:drf:' flag; do
     i) INITIALIZE_DATA="${OPTARG}" ;;
     r) REPORT="${OPTARG}" ;;
     d) DRYRUN="--dry_run" ;;
-    r) FORNO="--forno" ;;
+    z) FORNO="--forno" ;;
     f) FROM="${OPTARG}" ;;
     *) error "Unexpected option ${flag}" ;;
   esac
